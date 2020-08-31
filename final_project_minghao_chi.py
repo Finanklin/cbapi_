@@ -26,24 +26,21 @@ def trigger_api(since_time):
     return json.loads(response.text)
   else:
     return None
-if __name__ == "__main__":
-  try: 
-    current_date = datetime.combine(date.today(), time(0, 0, 0))
-    yesterday_date = current_date - timedelta(days=1)
-    yday_timestamp_utc = int(yesterday_date.replace(tzinfo=timezone.utc).timestamp())
-    print("Scanning Crunchbase API for company updates on " + yesterday_date.strftime("%m/%d/%YYYY"))
-    print(yday_timestamp_utc)
-    api_response = trigger_api(yday_timestamp_utc)
+
+#field: api_path, city_name, country_code, homepage_url, name
+#field: updated_at, created at, profile_image_url
+def csv_downloader(fields):
     with open('Crunchbase_Updated-' + yesterday_date.strftime("%m-%d-%Y") +  '.csv', 'w',newline='') as csv_file:
       csv_writer = csv.writer(csv_file)
-      csv_writer.writerow(["Name","Homepage", "Update Timestamp"])  
+      csv_writer.writerow(fields)  
       for org in api_response["data"]["items"]:
         try: 
+          data = []
+          for i in range(len(fields)):
+              data.append(org["properties"][fields[i]])
           org_name   = org["properties"]["name"]
-          org_url    = org["properties"]["homepage_url"]
-          org_update = str(org["properties"]["updated_at"])
           print("Adding Company: " + org_name)
-          csv_writer.writerow([org_name,org_url,org_update])  
+          csv_writer.writerow(data)  
           
         except TypeError as e:
           print(e)
@@ -58,6 +55,17 @@ if __name__ == "__main__":
           print("Encoding Error...Ignoring")
           
       csv_file.close()
+    
+if __name__ == "__main__":
+  try: 
+    current_date = datetime.combine(date.today(), time(0, 0, 0))
+    yesterday_date = current_date - timedelta(days=1)
+    yday_timestamp_utc = int(yesterday_date.replace(tzinfo=timezone.utc).timestamp())
+    print("Scanning Crunchbase API for company updates on " + yesterday_date.strftime("%m/%d/%YYYY"))
+    print(yday_timestamp_utc)
+    api_response = trigger_api(yday_timestamp_utc)
+    field = ["name", "homepage_url","updated_at"] 
+    csv_downloader(field)
   except Exception as e:
     print("Major Exception ...Aborting")
     sys.exit(e)
