@@ -13,8 +13,7 @@ import json
 import requests
 import csv
 from datetime import datetime, date, time, timedelta, timezone
-RAPIDAPI_KEY  = "9e1dea1425msh447f7d479d726c6p15f5bajsnd2ae8944056f"
-def trigger_api(since_time):
+def trigger_api(since_time, RAPIDAPI_KEY):
   querystring = {  "updated_since": str(since_time), "sort_order":"updated_at ASC"}
   headers = {
       'x-rapidapi-host': "crunchbase-crunchbase-v1.p.rapidapi.com",
@@ -63,7 +62,9 @@ if __name__ == "__main__":
     yday_timestamp_utc = int(yesterday_date.replace(tzinfo=timezone.utc).timestamp())
     print("Scanning Crunchbase API for company updates on " + yesterday_date.strftime("%m/%d/%YYYY"))
     print(yday_timestamp_utc)
-    api_response = trigger_api(yday_timestamp_utc)
+    print("Input your RAPIDAPI_KEY!")
+    key = input()
+    api_response = trigger_api(yday_timestamp_utc, key)
     field = ["name", "homepage_url","updated_at"] 
     csv_downloader(field)
   except Exception as e:
